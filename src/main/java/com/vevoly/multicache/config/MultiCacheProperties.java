@@ -41,22 +41,22 @@ public class MultiCacheProperties {
     @Data
     public static class RedisSettings {
         /** 正常值的过期时间 */
-        private Duration ttl = Duration.ofMinutes(10);
+        private Duration ttl;
         /** 空值标记的过期时间 */
-        private Duration emptyTtl = Duration.ofMinutes(1);
+        private Duration emptyTtl;
         /** Redis 存储类型 */
-        private StorageType storageType = StorageType.STRING;
+        private StorageType storageType;
     }
 
     @Data
     public static class CaffeineSettings {
         /** 是否为这个 cacheName 启用 L1 缓存 */
-        private Boolean enabled = true;
+        private Boolean enabled;
         /** 写入后过期时间 */
-        private Duration expireAfterWrite = Duration.ofMinutes(5);
+        private Duration expireAfterWrite;
         /** 最大条目数 */
-        private Long maximumSize = 1000L;
+        private Long maximumSize;
         /** 初始容量 */
-        private Integer initialCapacity = 100;
+        private Integer initialCapacity;
     }
 }

@@ -9,10 +9,7 @@ import com.vevoly.multicache.utils.RedisUtils;
 import com.vevoly.multicache.entity.User;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -44,7 +41,7 @@ class MultiCacheUtilsIntegrationTest extends BaseIntegrationTest {
     private RedisUtils redisUtils;
 
     @Autowired
-    @Qualifier("caffeineCacheManager") // 明确注入 CaffeineCacheManager
+    @Qualifier("caffeineCacheManager")
     private CacheManager caffeineCacheManager;
 
     private final static long userId = 1L;

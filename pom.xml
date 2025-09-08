@@ -9,7 +9,7 @@
         <relativePath/>
     </parent>
 
-    <groupId>io.github.yourusername</groupId>
+    <groupId>io.github.vevoly</groupId>
     <artifactId>j-multicache</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <name>j-multicache</name>

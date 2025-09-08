@@ -1,10 +1,12 @@
 package com.vevoly.multicache.resolver;
 
 import com.vevoly.multicache.config.MultiCacheProperties;
+import com.vevoly.multicache.enums.StorageType;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.Set;
@@ -17,6 +19,23 @@ import java.util.Set;
 public class CacheConfigResolver {
 
     private final MultiCacheProperties properties;
+
+    private static final MultiCacheProperties.CacheSettings SYSTEM_DEFAULTS;
+
+    static {
+        SYSTEM_DEFAULTS = new MultiCacheProperties.CacheSettings();
+
+        // Redis 系统默认值
+        SYSTEM_DEFAULTS.getRedis().setTtl(Duration.ofHours(1));
+        SYSTEM_DEFAULTS.getRedis().setEmptyTtl(Duration.ofMinutes(5));
+        SYSTEM_DEFAULTS.getRedis().setStorageType(StorageType.STRING);
+
+        // Caffeine 系统默认值
+        SYSTEM_DEFAULTS.getCaffeine().setEnabled(true);
+        SYSTEM_DEFAULTS.getCaffeine().setExpireAfterWrite(Duration.ofMinutes(10));
+        SYSTEM_DEFAULTS.getCaffeine().setMaximumSize(1000L);
+        SYSTEM_DEFAULTS.getCaffeine().setInitialCapacity(100);
+    }
 
     private Set<String> configuredCacheNames;
 
@@ -53,22 +72,22 @@ public class CacheConfigResolver {
     public MultiCacheProperties.CacheSettings resolve(String cacheName) {
 
         // 1. 获取全局默认配置
-        MultiCacheProperties.CacheSettings defaults = properties.getDefaults();
-
-        defaults.setNamespace("defaults");
+        MultiCacheProperties.CacheSettings customDefaults = properties.getDefaults();
+        MultiCacheProperties.CacheSettings baseDefaults = mergeSettings(SYSTEM_DEFAULTS, customDefaults);
+        baseDefaults.setNamespace("defaults");
 
         // 2. 获取该 cacheName 的特定配置 (可能为 null)
         MultiCacheProperties.CacheSettings specificConfig = properties.getConfigs().get(cacheName);
 
         // 3. 如果没有特定配置，直接返回默认配置
         if (specificConfig == null) {
-            return defaults;
+            return baseDefaults;
         }
 
         specificConfig.setNamespace(cacheName);
 
         // 4. 执行合并逻辑
-        return mergeSettings(defaults, specificConfig);
+        return mergeSettings(baseDefaults, specificConfig);
     }
 
     /**
@@ -81,68 +100,58 @@ public class CacheConfigResolver {
         if (key == null || key.isEmpty()) {
             return Optional.empty();
         }
-
-        // 1. 使用“最长前缀匹配”算法解析出 cacheName
-        Optional<String> bestMatch = configuredCacheNames.stream()
-                .filter(cacheName -> key.equals(cacheName) || key.startsWith(cacheName + ":"))
-                .max(Comparator.comparingInt(String::length));
-
-        // 2. 如果解析成功，则继续查找并合并配置
-        if (bestMatch.isPresent()) {
-            String cacheName = bestMatch.get();
-
-            // a. 获取全局默认配置
-            MultiCacheProperties.CacheSettings defaults = properties.getDefaults();
-
-            // b. 获取特定配置
-            MultiCacheProperties.CacheSettings specificConfig = properties.getConfigs().get(cacheName);
-
-            // c. 为 specificConfig 设置名字，以便合并后保留
-            specificConfig.setNamespace(cacheName);
-
-            // d. 执行合并并返回
-            return Optional.of(mergeSettings(defaults, specificConfig));
-
+        String cacheName = resolveCacheNameFromKey(key);
+        if (cacheName != null) {
+            return Optional.of(resolve(cacheName));
         } else {
-            return Optional.empty();
+            return Optional.of(mergeSettings(SYSTEM_DEFAULTS, new MultiCacheProperties.CacheSettings()));
         }
     }
 
     /**
-     * 将特定配置合并到默认配置之上。
+     * 合并配置项
      */
     private MultiCacheProperties.CacheSettings mergeSettings(
-            MultiCacheProperties.CacheSettings defaults,
+            MultiCacheProperties.CacheSettings base,
             MultiCacheProperties.CacheSettings specific
     ) {
         MultiCacheProperties.CacheSettings finalConfig = new MultiCacheProperties.CacheSettings();
-        finalConfig.setNamespace(specific.getNamespace());
 
-        // 1 合并 Redis 配置
+        // 名称优先取 specific 的
+        finalConfig.setNamespace(specific.getNamespace() != null ? specific.getNamespace() : base.getNamespace());
+
+        MultiCacheProperties.RedisSettings specificRedis =
+                Optional.ofNullable(specific.getRedis()).orElse(new MultiCacheProperties.RedisSettings());
+        MultiCacheProperties.CaffeineSettings specificCaffeine =
+                Optional.ofNullable(specific.getCaffeine()).orElse(new MultiCacheProperties.CaffeineSettings());
+
+        // 获取 base 的 redis/caffeine 配置
+        MultiCacheProperties.RedisSettings baseRedis = base.getRedis();
+        MultiCacheProperties.CaffeineSettings baseCaffeine = base.getCaffeine();
+
+        // 合并
         finalConfig.getRedis().setTtl(
-                Optional.ofNullable(specific.getRedis().getTtl()).orElse(defaults.getRedis().getTtl())
+                Optional.ofNullable(specificRedis.getTtl()).orElse(baseRedis.getTtl())
         );
         finalConfig.getRedis().setEmptyTtl(
-                Optional.ofNullable(specific.getRedis().getEmptyTtl()).orElse(defaults.getRedis().getEmptyTtl())
+                Optional.ofNullable(specificRedis.getEmptyTtl()).orElse(baseRedis.getEmptyTtl())
         );
         finalConfig.getRedis().setStorageType(
-                Optional.ofNullable(specific.getRedis().getStorageType()).orElse(defaults.getRedis().getStorageType())
+                Optional.ofNullable(specificRedis.getStorageType()).orElse(baseRedis.getStorageType())
         );
 
-        // 2. 合并 Caffeine 配置
         finalConfig.getCaffeine().setEnabled(
-                Optional.ofNullable(specific.getCaffeine().getEnabled()).orElse(defaults.getCaffeine().getEnabled())
+                Optional.ofNullable(specificCaffeine.getEnabled()).orElse(baseCaffeine.getEnabled())
         );
         finalConfig.getCaffeine().setExpireAfterWrite(
-                Optional.ofNullable(specific.getCaffeine().getExpireAfterWrite()).orElse(defaults.getCaffeine().getExpireAfterWrite())
+                Optional.ofNullable(specificCaffeine.getExpireAfterWrite()).orElse(baseCaffeine.getExpireAfterWrite())
         );
         finalConfig.getCaffeine().setMaximumSize(
-                Optional.ofNullable(specific.getCaffeine().getMaximumSize()).orElse(defaults.getCaffeine().getMaximumSize())
+                Optional.ofNullable(specificCaffeine.getMaximumSize()).orElse(baseCaffeine.getMaximumSize())
         );
         finalConfig.getCaffeine().setInitialCapacity(
-                Optional.ofNullable(specific.getCaffeine().getInitialCapacity()).orElse(defaults.getCaffeine().getInitialCapacity())
+                Optional.ofNullable(specificCaffeine.getInitialCapacity()).orElse(baseCaffeine.getInitialCapacity())
         );
-
         return finalConfig;
     }
 }

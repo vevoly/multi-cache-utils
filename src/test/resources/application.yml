@@ -4,22 +4,6 @@ spring:
       host: ${spring.data.redis.host}
       port: ${spring.data.redis.port}
 
-#j-multi-cache:
-#  defaults:
-#    redis:
-#      ttl: 10m
-#      empty-ttl: 5s
-#    caffeine:
-#      expire-after-write: 5m
-#      maximum-size: 100
-#  configs:
-#    '[user:user_details]': # 如果要使用【:】 则需要用方括号和引号括起来，否则【:】会被忽略
-#      redis:
-#        ttl: 30m
-#    user_list:
-#      redis:
-#        storage-type: LIST
-
 j-multi-cache:
   defaults:
     redis:
