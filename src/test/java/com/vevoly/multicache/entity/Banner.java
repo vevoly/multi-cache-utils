@@ -3,18 +3,16 @@ package com.vevoly.multicache.entity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 @Data
-@ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
+public class Banner {
 
     private long id;
 
-    private String siteId;
+    private Integer status;
 
-    private String name;
+    private String showUserType;
 
 }

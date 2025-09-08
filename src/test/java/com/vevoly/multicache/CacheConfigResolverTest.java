@@ -1,4 +1,4 @@
-package com.vevoly.multicache.test;
+package com.vevoly.multicache;
 
 import com.vevoly.multicache.config.MultiCacheProperties;
 import com.vevoly.multicache.resolver.CacheConfigResolver;

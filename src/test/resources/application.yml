@@ -4,18 +4,58 @@ spring:
       host: ${spring.data.redis.host}
       port: ${spring.data.redis.port}
 
+#j-multi-cache:
+#  defaults:
+#    redis:
+#      ttl: 10m
+#      empty-ttl: 5s
+#    caffeine:
+#      expire-after-write: 5m
+#      maximum-size: 100
+#  configs:
+#    '[user:user_details]': # 如果要使用【:】 则需要用方括号和引号括起来，否则【:】会被忽略
+#      redis:
+#        ttl: 30m
+#    user_list:
+#      redis:
+#        storage-type: LIST
+
 j-multi-cache:
   defaults:
     redis:
-      ttl: 10m
-      empty-ttl: 5s
+      ttl: 10s
+      empty-ttl: 3s
     caffeine:
-      expire-after-write: 5m
+      expire-after-write: 5s
       maximum-size: 100
   configs:
-    '[user:user_details]': # 如果要使用【:】 则需要用方括号和引号括起来，否则【:】会被忽略
+    # 用于 String 类型测试
+    '[user:user_details]':
       redis:
-        ttl: 30m
-    user_list:
+        storage-type: STRING
+    # 用于 List 类型测试
+    '[user:user_list]':
       redis:
         storage-type: LIST
+    # 用于 Set 类型测试
+    '[user:user_set]':
+      redis:
+        storage-type: SET
+    # 用于 Page 类型测试
+    '[result:user_page]':
+      redis:
+        storage-type: PAGE
+    # 用于 Union (Set) 类型测试
+    '[banner:banner_user_type_user:set]':
+      redis:
+        storage-type: SET
+        ttl: 1h
+    '[banner:banner_user_type_level:set]':
+      redis:
+        storage-type: SET
+        ttl: 1h
+    '[banner:banner_user_type:union]':
+      redis:
+        ttl: 10m
+      caffeine:
+        expire-after-write: 100s

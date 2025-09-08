@@ -178,8 +178,11 @@ public class MultiCacheUtils {
      * @return 最终的并集结果 Set
      * @param <T> Set 中元素的类型
      */
-    public <T> Set<T> getUnionData(String unionCacheKey, List<String> setKeysInRedis, TypeReference<Set<T>> typeRef,
-                                   Function<List<String>, Map<String, Set<T>>> dbQueryFunction) {
+    public <T> Set<T> getUnionData(String unionCacheKey,
+                                   List<String> setKeysInRedis,
+                                   TypeReference<Set<T>> typeRef,
+                                   Function<List<String>, Map<String, Set<T>>> dbQueryFunction
+    ) {
         return getUnionDataInternal(unionCacheKey, setKeysInRedis, typeRef, dbQueryFunction, StoragePolicy.L1_L2_DB);
     }
 
@@ -796,7 +799,7 @@ public class MultiCacheUtils {
         if (missingIds.isEmpty()) {
             return Collections.emptyMap();
         }
-        String lockKey = "lock:multicache:multi:" + config.getNamespace() + ":" + RedisUtils.getMd5Key(missingIds);
+        String lockKey = "lock:multicache:multi:" + config.getNamespace() + ":" + CacheUtils.getMd5Key(missingIds);
 
         if (redisUtils.tryLock(lockKey, 10, 20, TimeUnit.SECONDS)) {
             log.info(LOG_PREFIX + "[LEADER-Multi] 获取锁成功, 查询数据库 namespace: {}", config.getNamespace());

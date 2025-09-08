@@ -1,10 +1,13 @@
 package com.vevoly.multicache.utils;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import org.springframework.data.redis.core.script.DigestUtils;
+import org.springframework.util.CollectionUtils;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 项目工具类
@@ -18,6 +21,28 @@ public class CacheUtils {
             return namespace;
         }
         return namespace + ":" + String.join(":", key);
+    }
+
+    /**
+     * 将一个 Key 的集合转换为一个稳定的 MD5 哈希值。
+     */
+    public static String getMd5Key(Collection<?> keyList) {
+        if (CollectionUtils.isEmpty(keyList)) return " ";
+        String sortedKeysString = keyList.stream()
+                .filter(Objects::nonNull)
+                .map(Object::toString)
+                .sorted()
+                .collect(Collectors.joining(","));
+        return DigestUtils.sha1DigestAsHex(sortedKeysString);
+    }
+
+    public static String getMd5Key(String namespace, Collection<?> keyList) {
+        String md5Key = getMd5Key(keyList);
+        return getCacheKey(namespace, md5Key);
+    }
+
+    public static String getMd5Key(String namespace, String... key) {
+        return getMd5Key(namespace, Arrays.asList(key));
     }
 
     /**

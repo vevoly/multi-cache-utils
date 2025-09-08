@@ -29,28 +29,6 @@ public class RedisUtils {
     private RedissonClient redissonClient;
 
     /**
-     * 将一个 Key 的集合转换为一个稳定的 MD5 哈希值。
-     */
-    public static String getMd5Key(Collection<?> keyList) {
-        if (CollectionUtils.isEmpty(keyList)) return " ";
-        String sortedKeysString = keyList.stream()
-                .filter(Objects::nonNull)
-                .map(Object::toString)
-                .sorted()
-                .collect(Collectors.joining(","));
-        return DigestUtils.sha1DigestAsHex(sortedKeysString);
-    }
-
-    /**
-     * key存款返回 false
-     * key不存在 保存并返回true
-     */
-    public boolean setNx(String key, String value, long expired) {
-        RBucket<String> bucket = redissonClient.getBucket(key, StringCodec.INSTANCE);
-        return bucket.setIfAbsent(value, Duration.ofSeconds(expired));
-    }
-
-    /**
      * 获取分布式锁
      * @param lockKey 锁键
      * @return 锁对象
@@ -156,8 +134,6 @@ public class RedisUtils {
     }
 
     /**
-     * 删除缓存
-     *
      * 获取指定 Key 在 Redis 中的真实数据类型。
      *
      * @param key 键
@@ -178,16 +154,6 @@ public class RedisUtils {
 
     // ============================String=============================
 
-    public <T> T getNotSuffix(String key) {
-        try {
-            RBucket<T> bucket = redissonClient.getBucket(key);
-            return bucket.get();
-        } catch (Exception e) {
-            log.error("获取redis key:{} 失败", key, e);
-            return null;
-        }
-    }
-
     /**
      * 普通缓存获取
      * @param key 键
@@ -202,7 +168,6 @@ public class RedisUtils {
             return null;
         }
     }
-
 
     /**
      *
@@ -227,7 +192,6 @@ public class RedisUtils {
         return rs.stream().filter(v->null!=v).collect(Collectors.toList());
     }
 
-
     /**
      * 普通缓存放入
      * @param key 键
@@ -249,22 +213,9 @@ public class RedisUtils {
      *
      * @param key        键
      * @param value      值
-     * @param expireTime 过期时间，单位：秒
+     * @param ttl       过期时间
      * @return true成功 false失败
      */
-    public <T> boolean setList(String key, List<T> value, long expireTime) {
-        Optional.ofNullable(redissonClient).map(client -> {
-            RList<T> list = client.getList(key);
-            list.clear();
-            list.addAll(value);
-            if (expireTime > 0) {
-                list.expire(expireTime, TimeUnit.SECONDS);
-            }
-            return true;
-        });
-        return true;
-    }
-
     public <T> boolean setList(String key, List<T> value, Duration ttl) {
         Optional.ofNullable(redissonClient).ifPresent(client -> {
             RList<T> list = client.getList(key);
@@ -465,7 +416,8 @@ public class RedisUtils {
      * @return
      */
     public <T> Set<T> sGet(String key) {
-        return redissonClient.getSet(key);
+        RSet<T> rSet = redissonClient.getSet(key, StringCodec.INSTANCE);
+        return rSet.readAll();
     }
 
     /**
@@ -487,8 +439,15 @@ public class RedisUtils {
      */
     public long sSet(String key, long time, Object... values) {
 
-        RSet rSet = redissonClient.getSet(key);
-        long count = rSet.addAllCounted(Arrays.asList(values));
+        RSet<Object> rSet = redissonClient.getSet(key, StringCodec.INSTANCE);
+
+        // 确保传入的 values 都是字符串
+        List<String> stringValues = Arrays.stream(values)
+                .map(String::valueOf)
+                .collect(Collectors.toList());
+
+        rSet.clear();
+        long count = rSet.addAllCounted(stringValues);
         if (time > 0) {
             expire(key, time);
         }
@@ -610,7 +569,6 @@ public class RedisUtils {
 
     // ===============================list=================================
 
-
     /**
      * 根据传入的参数构建Redis Key
      *
@@ -622,8 +580,10 @@ public class RedisUtils {
      * System.out.println(redisKey);  // 输出: project:user:wallet:lock:12345
      */
     public String buildRedisKey(String... elements) {
+
         // 去除 elements 里面 为null和空字符的
         elements = Arrays.stream(elements).filter(StringUtils::isNotBlank).toArray(String[]::new);
+
         // 构建一个占位符模板字符串，例如有3个参数则生成"%s:%s:%s"
         String[] placeholders = new String[elements.length];
         Arrays.fill(placeholders, "%s");
@@ -725,7 +685,6 @@ public class RedisUtils {
         batch.execute(); // 一次性提交到 Redis
     }
 
-
     public void setBigDecimalValue(String key, BigDecimal value, long ttl, TimeUnit timeUnit) {
         if (key == null || value == null) {
             return;
@@ -790,18 +749,6 @@ public class RedisUtils {
 
         return results;
     }
-
-
-//	public BigDecimal hincr(String key, BigDecimal by) {
-//		long cents = by.movePointRight(2).longValueExact();
-//
-//		// 用 RAtomicLong 存分，避免浮点误差
-//		RAtomicLong counter = redissonClient.getAtomicLong(key);
-//		long newCents = counter.addAndGet(cents);
-//
-//		// 转回元
-//		return BigDecimal.valueOf(newCents, 2);
-//	}
 
     /**
      * 接口限流

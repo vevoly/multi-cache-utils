@@ -215,11 +215,13 @@ public class SetStorageStrategy implements RedisStorageStrategy<Set<?>> {
 
             if (Long.class.isAssignableFrom(elementClass)) {
                 return (Set<E>) cleanSet.stream()
+                        .map(String::trim)
                         .map(Long::parseLong)
                         .collect(Collectors.toSet());
             }
             if (Integer.class.isAssignableFrom(elementClass)) {
                 return (Set<E>) cleanSet.stream()
+                        .map(String::trim)
                         .map(Integer::parseInt)
                         .collect(Collectors.toSet());
             }
