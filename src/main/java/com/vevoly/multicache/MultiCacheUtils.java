@@ -7,7 +7,6 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.vevoly.multicache.config.MultiCacheProperties;
 import com.vevoly.multicache.enums.StoragePolicy;
 import com.vevoly.multicache.enums.StorageType;
-import com.vevoly.multicache.functional.CacheNameFunction;
 import com.vevoly.multicache.functional.CacheQueryFunction;
 import com.vevoly.multicache.functional.CacheQueryMultiFunction;
 import com.vevoly.multicache.functional.HashFieldQueryFunction;

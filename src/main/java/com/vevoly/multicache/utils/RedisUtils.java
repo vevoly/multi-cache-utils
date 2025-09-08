@@ -1,12 +1,11 @@
 package com.vevoly.multicache.utils;
 
+import io.micrometer.common.util.StringUtils;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.redisson.api.*;
 import org.redisson.client.codec.StringCodec;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.script.DigestUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 

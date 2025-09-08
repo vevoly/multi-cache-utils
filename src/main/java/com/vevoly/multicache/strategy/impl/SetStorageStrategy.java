@@ -9,11 +9,11 @@ import com.vevoly.multicache.utils.CacheUtils;
 import com.vevoly.multicache.utils.RedisUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.redisson.api.RBatch;
 import org.redisson.api.RFuture;
 import org.redisson.api.RSetAsync;
 import org.redisson.client.codec.StringCodec;
+import org.springframework.util.CollectionUtils;
 
 import java.time.Duration;
 import java.util.*;
