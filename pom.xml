@@ -15,7 +15,7 @@
     <artifactId>j-multicache-parent</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging> <!-- 打包方式必须是 pom -->
-    <name>j-multicache-parent</name>
+    <name>j-multicache</name>
 
     <modules>
         <module>j-multicache-common</module>
