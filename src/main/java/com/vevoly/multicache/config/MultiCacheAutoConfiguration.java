@@ -75,29 +75,6 @@ public class MultiCacheAutoConfiguration {
         return new CacheConfigResolver(properties);
     }
 
-    /**
-     * 从 MultiCacheProperties 中获取所有已定义的 cacheName。
-     */
-    @Bean
-    @ConditionalOnMissingBean
-    public CacheNameFunction cacheNameResolver(MultiCacheProperties properties) {
-
-        // 1. 获取所有在 yml 中配置的 cacheName
-        Set<String> configuredCacheNames = properties.getConfigs().keySet();
-
-        // 2. 返回一个实现了最长前缀匹配逻辑的 lambda
-        return key -> {
-            if (key == null || key.isEmpty()) {
-                return null;
-            }
-
-            return configuredCacheNames.stream()
-                    .filter(cacheName -> key.startsWith(cacheName + ":"))
-                    .max(Comparator.comparingInt(String::length))
-                    .orElse(null);
-        };
-    }
-
     @Bean
     @ConditionalOnMissingBean
     public MultiCacheUtils multiCacheUtilsV4(
