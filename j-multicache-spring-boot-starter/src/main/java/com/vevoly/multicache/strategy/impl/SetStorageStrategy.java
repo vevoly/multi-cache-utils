@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vevoly.multicache.enums.StorageType;
 import com.vevoly.multicache.strategy.RedisStorageStrategy;
 import com.vevoly.multicache.utils.CacheUtils;
-import com.vevoly.multicache.utils.RedisUtils;
+import com.vevoly.multicache.core.RedisUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RBatch;

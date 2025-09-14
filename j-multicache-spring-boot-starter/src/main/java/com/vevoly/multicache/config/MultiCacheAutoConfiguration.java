@@ -2,7 +2,6 @@ package com.vevoly.multicache.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vevoly.multicache.MultiCacheUtils;
-import com.vevoly.multicache.functional.CacheNameFunction;
 import com.vevoly.multicache.resolver.CacheConfigResolver;
 import com.vevoly.multicache.strategy.RedisStorageStrategy;
 import com.vevoly.multicache.strategy.impl.*;
@@ -17,9 +16,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
-import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.Executor;
 
 @Configuration
@@ -78,13 +75,14 @@ public class MultiCacheAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public MultiCacheUtils multiCacheUtilsV4(
-            RedisUtils redisUtils,
+            RedissonClient redissonClient,
             @Qualifier("caffeineCacheManager") CaffeineCacheManager caffeineCacheManager,
             List<RedisStorageStrategy<?>> strategies,
             ObjectMapper objectMapper,
             @Qualifier("asyncMultiCacheExecutor") Executor asyncExecutor,
             CacheConfigResolver configResolver
     ) {
-        return new MultiCacheUtils(redisUtils, caffeineCacheManager, strategies, objectMapper, asyncExecutor, configResolver);
+        RedisUtils internalRedisUtils = new RedisUtils(redissonClient);
+        return new MultiCacheUtils(internalRedisUtils, caffeineCacheManager, strategies, objectMapper, asyncExecutor, configResolver);
     }
 }

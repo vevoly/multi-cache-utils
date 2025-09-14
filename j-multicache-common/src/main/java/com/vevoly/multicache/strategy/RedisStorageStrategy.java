@@ -2,7 +2,7 @@ package com.vevoly.multicache.strategy;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.vevoly.multicache.enums.StorageType;
-import com.vevoly.multicache.utils.RedisUtils;
+import com.vevoly.multicache.core.RedisUtils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.redisson.api.RBatch;

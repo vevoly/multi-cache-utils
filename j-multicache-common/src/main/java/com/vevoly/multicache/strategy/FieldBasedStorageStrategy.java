@@ -2,7 +2,7 @@ package com.vevoly.multicache.strategy;
 
 
 
-import com.vevoly.multicache.utils.RedisUtils;
+import com.vevoly.multicache.core.RedisUtils;
 
 import java.time.Duration;
 

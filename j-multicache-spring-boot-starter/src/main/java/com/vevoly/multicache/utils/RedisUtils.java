@@ -1,6 +1,7 @@
 package com.vevoly.multicache.utils;
 
 import io.micrometer.common.util.StringUtils;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.*;
@@ -22,16 +23,18 @@ import java.util.stream.Collectors;
 @Slf4j
 @Getter
 @Component
-public class RedisUtils {
+@AllArgsConstructor
+public class RedisUtils implements com.vevoly.multicache.core.RedisUtils {
 
-    @Autowired
-    private RedissonClient redissonClient;
+    private final RedissonClient redissonClient;
 
     /**
      * 获取分布式锁
      * @param lockKey 锁键
      * @return 锁对象
      */
+
+    @Override
     public RLock getLock(String lockKey) {
         return redissonClient.getLock(lockKey);
     }
@@ -43,6 +46,7 @@ public class RedisUtils {
      * @param leaseTime 锁持有时间（秒）
      * @return 是否加锁成功
      */
+    @Override
     public boolean tryLock(String lockKey, long waitTime, long leaseTime, TimeUnit timeUnit) {
         try {
             RLock lock = getLock(lockKey);
@@ -58,6 +62,7 @@ public class RedisUtils {
      * 解锁
      * @param lockKey 锁键
      */
+    @Override
     public void unlock(String lockKey) {
         try {
             if (redissonClient.isShutdown() || redissonClient.isShuttingDown()) {
@@ -147,7 +152,6 @@ public class RedisUtils {
      * @param keys 可以传一个值 或多个
      */
     public void del(String... keys) {
-
         redissonClient.getKeys().delete(keys);
     }
 
@@ -158,6 +162,7 @@ public class RedisUtils {
      * @param key 键
      * @return 值
      */
+    @Override
     public <T> T get(String key) {
         try {
             RBucket<T> bucket = redissonClient.getBucket(key);
@@ -197,31 +202,9 @@ public class RedisUtils {
      * @param value 值
      * @return true成功 false失败
      */
+    @Override
     public boolean set(String key, Object value, Duration ttl) {
         redissonClient.getBucket(key).set(value, ttl);
-        return true;
-    }
-
-    public boolean set(String key, String value, Duration ttl) {
-        redissonClient.getBucket(key).set(value, ttl);
-        return true;
-    }
-
-    /**
-     * 普通缓存放入
-     *
-     * @param key        键
-     * @param value      值
-     * @param ttl       过期时间
-     * @return true成功 false失败
-     */
-    public <T> boolean setList(String key, List<T> value, Duration ttl) {
-        Optional.ofNullable(redissonClient).ifPresent(client -> {
-            RList<T> list = client.getList(key);
-            list.clear();
-            list.addAll(value);
-            list.expire(ttl);
-        });
         return true;
     }
 
@@ -232,8 +215,26 @@ public class RedisUtils {
      * @return
      * @param <R>
      */
+    @Override
     public <R> List<R> getList(String key) {
         return redissonClient.getList(key);
+    }
+
+    /**
+     * 普通缓存放入
+     *
+     * @param key   键
+     * @param value 值
+     * @param ttl   过期时间
+     */
+    @Override
+    public <T> void setList(String key, List<T> value, Duration ttl) {
+        Optional.ofNullable(redissonClient).ifPresent(client -> {
+            RList<T> list = client.getList(key);
+            list.clear();
+            list.addAll(value);
+            list.expire(ttl);
+        });
     }
 
     /**
@@ -256,22 +257,6 @@ public class RedisUtils {
             }
         }
         return result;
-    }
-
-    /**
-     * 普通缓存放入并设置时间
-     * @param key 键
-     * @param value 值
-     * @param time 时间(秒) time要大于0 如果time小于等于0 将设置无限期
-     * @return true成功 false 失败
-     */
-    public boolean set(String key, Object value, long time) {
-        if (time > 0) {
-            redissonClient.getBucket(key).set(value, Duration.ofSeconds(time));
-        } else {
-            redissonClient.getBucket(key).set(value);
-        }
-        return true;
     }
 
     /**
@@ -311,10 +296,6 @@ public class RedisUtils {
         batch.execute();
     }
 
-    public void del(Collection<String> keys) {
-        redissonClient.getKeys().delete(keys.toArray(new String[0]));
-    }
-
     // ================================Map=================================
 
     /**
@@ -323,6 +304,7 @@ public class RedisUtils {
      * @param hashKey 项 不能为null
      * @return 值
      */
+    @Override
     public <HK, HV> HV hget(String key, HK hashKey) {
         return (HV) redissonClient.getMap(key).get(hashKey);
     }
@@ -332,10 +314,12 @@ public class RedisUtils {
      * @param key 键
      * @return 对应的多个键值
      */
+    @Override
     public <HK, HV> Map<HK, HV> hmget(String key) {
         return redissonClient.getMap(key);
     }
 
+    @Override
     public boolean hmset(String key, Map<String, Object> map, Duration ttl) {
 
         Optional.ofNullable(redissonClient).map(client -> {
@@ -382,6 +366,7 @@ public class RedisUtils {
         map.expire(expire, TimeUnit.SECONDS);
     }
 
+    @Override
     public boolean hset(String key, String item, Object value, long time) {
 
         Optional.ofNullable(redissonClient).map(client -> {
@@ -414,6 +399,7 @@ public class RedisUtils {
      * @param key 键
      * @return
      */
+    @Override
     public <T> Set<T> sGet(String key) {
         RSet<T> rSet = redissonClient.getSet(key, StringCodec.INSTANCE);
         return rSet.readAll();
@@ -436,6 +422,7 @@ public class RedisUtils {
      * @param values 值 可以是多个
      * @return 成功个数
      */
+    @Override
     public long sSet(String key, long time, Object... values) {
 
         RSet<Object> rSet = redissonClient.getSet(key, StringCodec.INSTANCE);
@@ -469,6 +456,7 @@ public class RedisUtils {
     /**
      * 重载版本，接收 List<String>
      */
+    @Override
     public Set<String> sUnion(List<String> keys) {
         if (keys == null || keys.isEmpty()) {
             return Collections.emptySet();
@@ -502,6 +490,7 @@ public class RedisUtils {
      *         "unionResult" -> (Set<String>) 存在的keys计算出的并集
      *         "missedKeys"  -> (List<String>)不存在的keys
      */
+    @Override
     public Map<String, Object> sunionAndFindMisses(List<String> keys) {
         if (keys == null || keys.isEmpty()) {
             Map<String, Object> result = new HashMap<>();
@@ -569,36 +558,12 @@ public class RedisUtils {
     // ===============================list=================================
 
     /**
-     * 根据传入的参数构建Redis Key
-     *
-     * @param elements 动态参数列表
-     * @return 构建好的Redis Key
-     * <p>
-     * // 示例调用
-     * String redisKey = buildRedisKey("project", "user", "wallet", "lock", String.valueOf(12345L));
-     * System.out.println(redisKey);  // 输出: project:user:wallet:lock:12345
-     */
-    public String buildRedisKey(String... elements) {
-
-        // 去除 elements 里面 为null和空字符的
-        elements = Arrays.stream(elements).filter(StringUtils::isNotBlank).toArray(String[]::new);
-
-        // 构建一个占位符模板字符串，例如有3个参数则生成"%s:%s:%s"
-        String[] placeholders = new String[elements.length];
-        Arrays.fill(placeholders, "%s");
-        String template = String.join(":", placeholders);
-
-        // 使用模板和传入的参数构建最终的字符串
-        return String.format(template, (Object[]) elements);
-    }
-
-    /**
      * @param key           限流Key
      * @param maxCount      最大次数
      * @param windowSeconds 时间窗口（秒）
      * @return true=允许 false=拒绝
      */
-    public boolean tryAcquire(String key, int maxCount, int windowSeconds){
+    public boolean tryAcquire(String key, int maxCount, int windowSeconds) {
 
         Long result = redissonClient.getScript().eval(
                 RScript.Mode.READ_WRITE,
@@ -758,6 +723,7 @@ public class RedisUtils {
      *
      * @return
      */
+    @Override
     public boolean isRateLimit(String key, int maxCount, int windowSeconds) {
         if (maxCount <= 0) {
             maxCount = 1;

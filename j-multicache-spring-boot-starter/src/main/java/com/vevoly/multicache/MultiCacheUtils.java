@@ -18,7 +18,9 @@ import com.vevoly.multicache.utils.RedisUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RBatch;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cache.caffeine.CaffeineCacheManager;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
 
@@ -32,7 +34,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
-@Component
 public class MultiCacheUtils {
 
     private final RedisUtils redisUtils;

@@ -6,10 +6,9 @@ import com.vevoly.multicache.enums.StorageType;
 import com.vevoly.multicache.strategy.FieldBasedStorageStrategy;
 import com.vevoly.multicache.strategy.RedisStorageStrategy;
 import com.vevoly.multicache.utils.CacheUtils;
-import com.vevoly.multicache.utils.RedisUtils;
+import com.vevoly.multicache.core.RedisUtils;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.MapUtils;
-import org.apache.ibatis.util.MapUtil;
 import org.redisson.api.RBatch;
 
 import java.time.Duration;

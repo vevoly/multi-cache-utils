@@ -2,6 +2,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
+    <!-- 父项目继承 Spring Boot Parent -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -9,92 +11,67 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.github.vevoly</groupId>
-    <artifactId>j-multicache</artifactId>
+    <groupId>com.vevoly.multicache</groupId>
+    <artifactId>j-multicache-parent</artifactId>
     <version>1.0.0-SNAPSHOT</version>
-    <name>j-multicache</name>
-    <description>A lightweight, non-intrusive multi-level cache (L1-Caffeine, L2-Redis) utility library.</description>
+    <packaging>pom</packaging> <!-- 打包方式必须是 pom -->
+    <name>j-multicache-parent</name>
+
+    <modules>
+        <module>j-multicache-common</module>
+        <module>j-multicache-spring-boot-starter</module>
+    </modules>
 
     <properties>
         <java.version>17</java.version>
-        <redisson.version>3.36.0</redisson.version>
+        <redisson.version>3.26.0</redisson.version>
+        <spring-boot.version>3.2.0</spring-boot.version>
         <mybatis-plus.version>3.5.5</mybatis-plus.version>
         <testcontainers.version>1.19.3</testcontainers.version>
+        <commons-collections4.version>4.4</commons-collections4.version>
     </properties>
 
-    <dependencies>
+    <!-- 使用 dependencyManagement 统一管理所有子模块的依赖版本 -->
+    <dependencyManagement>
+        <dependencies>
 
-        <!-- 核心编译依赖 -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-autoconfigure</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-configuration-processor</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <optional>true</optional>
-        </dependency>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
 
-        <!-- 基础设施依赖 (使用者必须自己提供) - scope: provided -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-cache</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-redis</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.redisson</groupId>
-            <artifactId>redisson-spring-boot-starter</artifactId>
-            <version>${redisson.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.github.ben-manes.caffeine</groupId>
-            <artifactId>caffeine</artifactId>
-            <scope>provided</scope>
-        </dependency>
+            <dependency>
+                <groupId>com.vevoly.multicache</groupId>
+                <artifactId>j-multicache-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
-        <!-- 可选功能依赖 (使用者按需引入) - optional: true -->
-        <dependency>
-            <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus-extension</artifactId>
-            <version>${mybatis-plus.version}</version>
-            <optional>true</optional>
-        </dependency>
-
-        <!-- 内部工具类依赖 (库的一部分) - scope: compile  -->
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-collections4</artifactId>
-            <version>4.4</version>
-        </dependency>
-
-        <!-- 测试依赖 - scope: test -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>testcontainers</artifactId>
-            <version>${testcontainers.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-    </dependencies>
+            <!-- 管理第三方依赖版本 -->
+            <dependency>
+                <groupId>org.redisson</groupId>
+                <artifactId>redisson-spring-boot-starter</artifactId>
+                <version>${redisson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-extension</artifactId>
+                <version>${mybatis-plus.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-collections4</artifactId>
+                <version>${commons-collections4.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers-bom</artifactId>
+                <version>${testcontainers.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 </project>
