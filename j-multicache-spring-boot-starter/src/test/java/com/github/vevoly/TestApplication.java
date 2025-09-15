@@ -12,12 +12,6 @@ import org.springframework.context.annotation.Bean;
 @EnableCaching
 public class TestApplication {
 
-    @Bean("caffeineCacheManager")
-    public CaffeineCacheManager caffeineCacheManager() {
-        CaffeineCacheManager cacheManager = new CaffeineCacheManager();
-        return cacheManager;
-    }
-
     @Bean
     public ObjectMapper objectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();

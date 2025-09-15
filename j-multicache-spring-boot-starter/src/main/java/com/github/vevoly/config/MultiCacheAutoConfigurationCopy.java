@@ -24,23 +24,10 @@ import java.util.concurrent.Executor;
  * J-MultiCache 的主自动配置类。
  * 负责启用配置、导入默认组件、并组装最终的 MultiCacheUtils Bean。
  */
-@AutoConfiguration
-@EnableConfigurationProperties({MultiCacheProperties.class, RedisProperties.class})
-@ConditionalOnClass({RedissonClient.class, CaffeineCacheManager.class})
-public class MultiCacheAutoConfiguration {
-
-    /**
-     * 自动配置 CaffeineCacheManager Bean。
-     * 只有当使用者没有提供自己的、名为 "caffeineCacheManager" 的Bean时，
-     * 我们才创建这个默认的，并用 j-multicache 的配置来填充它。
-     * todo 动态解析配置文件，将配置文件应用到 caffeineCacheManager
-     */
-    @Bean("caffeineCacheManager")
-    @ConditionalOnMissingBean(name = "caffeineCacheManager")
-    public CaffeineCacheManager caffeineCacheManager(MultiCacheProperties multiCacheProperties) {
-        CaffeineCacheManager cacheManager = new CaffeineCacheManager();
-        return cacheManager;
-    }
+//@AutoConfiguration
+//@EnableConfigurationProperties({MultiCacheProperties.class})
+//@ConditionalOnClass({RedissonClient.class, CaffeineCacheManager.class})
+public class MultiCacheAutoConfigurationCopy {
 
     @Bean("stringStorageStrategy")
     @ConditionalOnMissingBean(name = "stringStorageStrategy")

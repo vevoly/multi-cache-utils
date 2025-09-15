@@ -12,7 +12,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
  * 负责启动 Testcontainers (Redis) 和配置Spring Boot测试环境。
  */
 @Testcontainers
-@SpringBootTest(classes = TestApplication.class)
+@SpringBootTest()
 public abstract class BaseIntegrationTest {
 
     @Container
