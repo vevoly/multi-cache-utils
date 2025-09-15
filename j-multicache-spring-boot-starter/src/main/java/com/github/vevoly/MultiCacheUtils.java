@@ -236,27 +236,26 @@ public class MultiCacheUtils {
      * 【方法一：整体存储】缓存预热。直接接收一个准备好的Map，并批量写入到L1和L2缓存中。
      * 使用默认的 L1_L2_DB 缓存策略。
      *
-     * @param config      要预热的缓存的配置枚举
      * @param dataToCache 待缓存的数据，Key是Redis Key，Value是要缓存的对象
      * @return 成功预热的缓存条目数量
      * @param <V>         要缓存的对象的类型
      */
-    public <V> int preLoadCacheFromMap(MultiCacheProperties.CacheSettings config, Map<String, V> dataToCache) {
-        return preLoadCacheFromMap(config, dataToCache, StoragePolicy.L1_L2_DB);
+    public <V> int preLoadCacheFromMap(Map<String, V> dataToCache) {
+        return preLoadCacheFromMap(dataToCache, StoragePolicy.L1_L2_DB);
     }
 
     /**
      * 【方法二：Redis 存储】缓存预热。直接接收Map，只写入到L2(Redis)缓存中。
      */
-    public <V> int preLoadCacheToL2FromMap(MultiCacheProperties.CacheSettings config, Map<String, V> dataToCache) {
-        return preLoadCacheFromMap(config, dataToCache, StoragePolicy.L2_DB);
+    public <V> int preLoadCacheToL2FromMap(Map<String, V> dataToCache) {
+        return preLoadCacheFromMap(dataToCache, StoragePolicy.L2_DB);
     }
 
     /**
      * 【方法三：本地缓存 存储】缓存预热。直接接收Map，只写入到L1(Caffeine)缓存中。
      */
-    public <V> int preLoadCacheToL1FromMap(MultiCacheProperties.CacheSettings config, Map<String, V> dataToCache) {
-        return preLoadCacheFromMap(config, dataToCache, StoragePolicy.L1_DB);
+    public <V> int preLoadCacheToL1FromMap(Map<String, V> dataToCache) {
+        return preLoadCacheFromMap(dataToCache, StoragePolicy.L1_DB);
     }
 
     // =================================================================
@@ -859,14 +858,17 @@ public class MultiCacheUtils {
         }
     }
 
-    private <V> int preLoadCacheFromMap(MultiCacheProperties.CacheSettings config,
-                                        Map<String, V> dataToCache,
+    private <V> int preLoadCacheFromMap(Map<String, V> dataToCache,
                                         StoragePolicy storagePolicy
     ) {
         if (dataToCache == null || dataToCache.isEmpty()) {
-            log.warn(LOG_PREFIX + "[WARM-UP-MAP] 传入的预热数据为空，预热结束。Namespace: {}", config.getNamespace());
+            log.warn(LOG_PREFIX + "[WARM-UP-MAP] 传入的预热数据为空，预热结束。");
             return 0;
         }
+
+        // 1. 调用 Resolver 来获取配置
+        String key = dataToCache.keySet().iterator().next();
+        final MultiCacheProperties.CacheSettings config = getConfigFromKey(key);
 
         log.info(LOG_PREFIX + "[WARM-UP-MAP] 开始为 '{}' 执行缓存预热，策略: {}，数量: {}",
                 config.getNamespace(), storagePolicy, dataToCache.size());
@@ -874,7 +876,7 @@ public class MultiCacheUtils {
 
         try {
 
-            // 1. 根据策略回填 L2 Redis
+            // 2. 根据策略回填 L2 Redis
             if (storagePolicy.isUseL2()) {
                 stopWatch.start("Populate L2 Cache");
                 RedisStorageStrategy<V> strategy = getStrategy(config.getRedis().getStorageType());
@@ -884,7 +886,7 @@ public class MultiCacheUtils {
                 stopWatch.stop();
             }
 
-            // 2. 根据策略回填 L1 Caffeine
+            // 3. 根据策略回填 L1 Caffeine
             if (storagePolicy.isUseL1()) {
                 stopWatch.start("Populate L1 Cache");
                 putInLocalCacheMultiAsync(config.getNamespace(), new HashMap<>(dataToCache));
