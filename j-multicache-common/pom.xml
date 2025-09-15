@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.vevoly.multicache</groupId>
+        <groupId>com.github.vevoly</groupId>
         <artifactId>j-multicache-parent</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>

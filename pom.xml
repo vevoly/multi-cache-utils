@@ -11,10 +11,10 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.vevoly.multicache</groupId>
+    <groupId>com.github.vevoly</groupId>
     <artifactId>j-multicache-parent</artifactId>
     <version>1.0.0-SNAPSHOT</version>
-    <packaging>pom</packaging> <!-- 打包方式必须是 pom -->
+    <packaging>pom</packaging>
     <name>j-multicache</name>
 
     <modules>
@@ -44,7 +44,7 @@
             </dependency>
 
             <dependency>
-                <groupId>com.vevoly.multicache</groupId>
+                <groupId>com.github.vevoly</groupId>
                 <artifactId>j-multicache-common</artifactId>
                 <version>${project.version}</version>
             </dependency>
