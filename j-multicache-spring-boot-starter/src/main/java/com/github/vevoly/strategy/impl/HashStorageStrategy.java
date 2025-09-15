@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.vevoly.enums.StorageType;
 import com.github.vevoly.strategy.FieldBasedStorageStrategy;
 import com.github.vevoly.strategy.RedisStorageStrategy;
-import com.github.vevoly.utils.CacheUtils;
+import com.github.vevoly.core.CacheUtils;
 import com.github.vevoly.core.RedisUtils;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.MapUtils;

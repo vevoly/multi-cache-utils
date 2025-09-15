@@ -13,7 +13,7 @@ import com.github.vevoly.functional.HashFieldQueryFunction;
 import com.github.vevoly.resolver.CacheConfigResolver;
 import com.github.vevoly.strategy.FieldBasedStorageStrategy;
 import com.github.vevoly.strategy.RedisStorageStrategy;
-import com.github.vevoly.utils.CacheUtils;
+import com.github.vevoly.core.CacheUtils;
 import com.github.vevoly.utils.RedisUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RBatch;

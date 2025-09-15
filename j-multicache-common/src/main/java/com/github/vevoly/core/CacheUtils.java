@@ -1,4 +1,4 @@
-package com.github.vevoly.utils;
+package com.github.vevoly.core;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.springframework.data.redis.core.script.DigestUtils;
@@ -21,6 +21,11 @@ public class CacheUtils {
             return namespace;
         }
         return namespace + ":" + String.join(":", key);
+    }
+
+    public static String getCacheKey(String namespace, Long... key) {
+        return getCacheKey(namespace,
+                Arrays.stream(key).map(String::valueOf).toArray(String[]::new));
     }
 
     /**

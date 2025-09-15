@@ -8,18 +8,22 @@ import com.github.vevoly.strategy.impl.*;
 import com.github.vevoly.utils.RedisUtils;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.List;
 import java.util.concurrent.Executor;
 
-@Configuration
+/**
+ * J-MultiCache 的主自动配置类。
+ * 负责启用配置、导入默认组件、并组装最终的 MultiCacheUtils Bean。
+ */
+@AutoConfiguration
 @EnableConfigurationProperties(MultiCacheProperties.class)
 @ConditionalOnClass({RedissonClient.class, CaffeineCacheManager.class})
 public class MultiCacheAutoConfiguration {
@@ -74,7 +78,7 @@ public class MultiCacheAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public MultiCacheUtils multiCacheUtilsV4(
+    public MultiCacheUtils multiCacheUtils(
             RedissonClient redissonClient,
             @Qualifier("caffeineCacheManager") CaffeineCacheManager caffeineCacheManager,
             List<RedisStorageStrategy<?>> strategies,

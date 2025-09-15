@@ -2,7 +2,7 @@ package com.github.vevoly;
 
 
 import com.github.vevoly.enums.CacheName;
-import com.github.vevoly.utils.CacheUtils;
+import com.github.vevoly.core.CacheUtils;
 import com.github.vevoly.utils.RedisUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

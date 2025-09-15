@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 import com.github.vevoly.enums.CacheName;
-import com.github.vevoly.utils.CacheUtils;
+import com.github.vevoly.core.CacheUtils;
 import com.github.vevoly.utils.RedisUtils;
 import com.github.vevoly.entity.User;
 import lombok.extern.slf4j.Slf4j;
@@ -66,7 +66,7 @@ class MultiCacheUtilsIntegrationTest extends BaseIntegrationTest {
         @DisplayName("策略 L1_L2_DB (String): 应完整地经过 L1 -> L2 -> DB")
         void singleDataStringTest() throws InterruptedException {
             String cacheName = CacheName.USER_DETAILS.getNamespace();
-            String key = CacheUtils.getCacheKey(cacheName, String.valueOf(userId));
+            String key = CacheUtils.getCacheKey(cacheName, userId);
             AtomicInteger dbCallCount = new AtomicInteger(0);
 
             // 1. 第一次: 穿透到 DB
@@ -140,7 +140,7 @@ class MultiCacheUtilsIntegrationTest extends BaseIntegrationTest {
             List<Long> userIds = List.of(10L, 11L, 12L);
             AtomicInteger dbCallCount = new AtomicInteger(0);
 
-            Function<Long, String> keyBuilder = id -> CacheUtils.getCacheKey(cacheName, String.valueOf(id));
+            Function<Long, String> keyBuilder = id -> CacheUtils.getCacheKey(cacheName, id);
 
             // 准备: L2中预缓存11L, L1中预缓存12L
             redisUtils.set(keyBuilder.apply(11L), new User(11L, siteId, "user_from_L2"), Duration.ofMinutes(1));
@@ -179,9 +179,9 @@ class MultiCacheUtilsIntegrationTest extends BaseIntegrationTest {
             Long userId = 100L;
             Long levelId = 5L;
 
-            String unionCacheKey = CacheUtils.getCacheKey(unionCacheName, String.valueOf(userId), String.valueOf(levelId));
-            String userSetKey = CacheUtils.getCacheKey(userCacheName, String.valueOf(userId));
-            String levelSetKey = CacheUtils.getCacheKey(levelCacheName, String.valueOf(levelId));
+            String unionCacheKey = CacheUtils.getCacheKey(unionCacheName, userId, levelId);
+            String userSetKey = CacheUtils.getCacheKey(userCacheName, userId);
+            String levelSetKey = CacheUtils.getCacheKey(levelCacheName, levelId);
 
             // 准备: userSetKey在Redis中不存在，levelSetKey存在
             redisUtils.sSet(levelSetKey, 1000L, 1001L, 1002L);
